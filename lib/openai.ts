@@ -6,8 +6,11 @@ if (!openaiApiKey) {
   console.warn('OpenAI API Key is missing. Resume analysis will fail.');
 }
 
+const isGeminiKey = openaiApiKey?.startsWith('AIzaSy') || openaiApiKey?.startsWith('AQ.');
+
 export const openai = new OpenAI({
   apiKey: openaiApiKey || 'placeholder_openai_key',
+  baseURL: isGeminiKey ? 'https://generativelanguage.googleapis.com/v1beta/openai/' : undefined,
 });
 
 export interface ReviewFeedback {
@@ -27,7 +30,9 @@ export async function analyzeResume(
   jobDescription: string,
   isPro: boolean = false
 ): Promise<ReviewResponse> {
-  const model = isPro ? 'gpt-4o' : 'gpt-4o-mini';
+  const model = isGeminiKey 
+    ? (isPro ? 'gemini-2.5-pro' : 'gemini-2.5-flash')
+    : (isPro ? 'gpt-4o' : 'gpt-4o-mini');
 
   try {
     const response = await openai.chat.completions.create({
