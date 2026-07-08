@@ -15,7 +15,6 @@ if (typeof global !== 'undefined') {
   }
 }
 
-const pdfParse = require('pdf-parse');
 import mammoth from 'mammoth';
 
 // GET: List reviews (with tier-based limits)
@@ -95,7 +94,9 @@ export async function POST(req: Request) {
 
     if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
       try {
-        const parsedPdf = await pdfParse(buffer);
+        const { PDFParse } = require('pdf-parse');
+        const parser = new PDFParse(buffer);
+        const parsedPdf = await parser.getText();
         resumeText = parsedPdf.text || '';
       } catch (err: any) {
         console.error('PDF parsing error:', err);
