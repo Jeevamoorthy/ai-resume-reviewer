@@ -17,7 +17,7 @@ ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can view their own profile" 
   ON public.users 
   FOR SELECT 
-  USING (auth.uid() = id OR (SELECT current_setting('request.jwt.claims', true)::jsonb->>'sub') = id);
+  USING (auth.uid()::text = id OR (SELECT current_setting('request.jwt.claims', true)::jsonb->>'sub') = id);
 
 -- Create resume_reviews table
 CREATE TABLE IF NOT EXISTS public.resume_reviews (
@@ -38,10 +38,10 @@ ALTER TABLE public.resume_reviews ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can insert their own reviews" 
   ON public.resume_reviews 
   FOR INSERT 
-  WITH CHECK (auth.uid() = user_id OR (SELECT current_setting('request.jwt.claims', true)::jsonb->>'sub') = user_id);
+  WITH CHECK (auth.uid()::text = user_id OR (SELECT current_setting('request.jwt.claims', true)::jsonb->>'sub') = user_id);
 
 -- Policy for users to view their own reviews
 CREATE POLICY "Users can view their own reviews" 
   ON public.resume_reviews 
   FOR SELECT 
-  USING (auth.uid() = user_id OR (SELECT current_setting('request.jwt.claims', true)::jsonb->>'sub') = user_id);
+  USING (auth.uid()::text = user_id OR (SELECT current_setting('request.jwt.claims', true)::jsonb->>'sub') = user_id);
