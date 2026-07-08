@@ -94,9 +94,8 @@ export async function POST(req: Request) {
 
     if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
       try {
-        const { PDFParse } = require('pdf-parse');
-        const parser = new PDFParse(new Uint8Array(buffer));
-        const parsedPdf = await parser.getText();
+        const pdfParse = require('pdf-parse');
+        const parsedPdf = await pdfParse(buffer);
         resumeText = parsedPdf.text || '';
       } catch (err: any) {
         console.error('PDF parsing error:', err);
