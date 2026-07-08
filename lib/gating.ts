@@ -1,4 +1,5 @@
 import { supabaseAdmin } from './supabase-admin';
+import { currentUser } from '@clerk/nextjs/server';
 
 export interface UserPlanStatus {
   plan: 'free' | 'pro';
@@ -19,7 +20,22 @@ export async function getUserPlan(userId: string): Promise<UserPlanStatus> {
     .single();
 
   if (error || !data) {
-    console.error('Error fetching user plan:', error);
+    console.warn(`User ${userId} not found in DB. Attempting auto-registration...`);
+    try {
+      const user = await currentUser();
+      const email = user?.emailAddresses?.[0]?.emailAddress;
+      if (email) {
+        // Auto-register user in DB
+        await supabaseAdmin.from('users').upsert({
+          id: userId,
+          email: email,
+          plan: 'free',
+        }, { onConflict: 'id' });
+        console.log(`Auto-registered user ${userId} (${email}) successfully.`);
+      }
+    } catch (clerkErr) {
+      console.error('Failed to auto-register user:', clerkErr);
+    }
     return { plan: 'free', stripeCustomerId: null, stripeSubscriptionId: null };
   }
 
